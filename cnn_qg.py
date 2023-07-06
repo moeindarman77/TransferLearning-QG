@@ -79,6 +79,14 @@ class ConvNeuralNet(nn.Module):
                 output = self.conv_layer11(out7) #Layer11 (Output Layer) 
                 return output, out1, out2, out3, out4, out5, out6, out7
 
+class rRMSELoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, yhat, y):
+        return torch.sqrt(self.mse(yhat, y)) / torch.sqrt(torch.mean(y**2))
+
 
 ################################################################################################################################
                         # --------------------------- Setting up Hyper-Parmeters for CNN --------------------------- #
@@ -113,6 +121,7 @@ def train_model(config=config_default):
 
     # 0.1. Set loss funtion with criterion
     criterion = nn.MSELoss()
+    criterion_rmse = rRMSELoss() # The first argument should be the "predicted value" and the second argument should be the "true value"
 
     # 0.2 Set the optimizer (Adam)
     optimizer = torch.optim.Adam(model.parameters(), lr= config['learning_rate'], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad = True)
@@ -176,9 +185,10 @@ def train_model(config=config_default):
     # print('Epoch  TotalEpoch    Training Loss   Test Loss   CC_tau11    CC_tau12    CC_tau22 \n ---------------------------------------------------------------------------------')
     
     for epoch in range(config['num_epochs']):
-
         # ------------------------------------------------------ Training Data Loop ------------------------------------------------------
         train_loss_total = 0
+        train_rmse_q1_total = 0
+        train_rmse_q2_total = 0
         for i, data_train in enumerate(data_loader_train):
 
             # Get batch of data
@@ -190,10 +200,16 @@ def train_model(config=config_default):
 
             # Forward pass train 
             model_output,_,_,_,_,_,_,_ = model(inputs_train)
+
+            # Calculate the loss, RMSE 
             loss = criterion(model_output, labels_train)
+            rmse_q1_train_ = criterion_rmse(model_output[:,0], labels_train[:,0]) # The first argument should be the "predicted value" and the second argument should be the "true value"
+            rmse_q2_train_ = criterion_rmse(model_output[:,1], labels_train[:,1]) # The first argument should be the "predicted value" and the second argument should be the "true value"
 
             # Sum the loss over the batch
             train_loss_total =+ loss.item()
+            train_rmse_q1_total =+ rmse_q1_train_.item()
+            train_rmse_q2_total =+ rmse_q2_train_.item()
             
             # Backward and optimize
             optimizer.zero_grad()
@@ -204,12 +220,16 @@ def train_model(config=config_default):
             print(f"Train Batch[{i+1}/{len(data_loader_train)}]", end='\r')
         # Average the loss over the batch
         train_loss_avg = train_loss_total/len(data_loader_train)
+        train_rmse_q1_avg = train_rmse_q1_total/len(data_loader_train)
+        train_rmse_q2_avg = train_rmse_q2_total/len(data_loader_train)
         del inputs_train, labels_train, model_output
         
         # ------------------------------------------------------ Test Loop ------------------------------------------------------
         test_loss_total = 0
-        cc_q1_test_total = 0
-        cc_q2_test_total = 0
+        test_rmse_q1_total = 0
+        test_rmse_q2_total = 0
+        cc_q1_total = 0
+        cc_q2_total = 0
         for i, data_test in enumerate(data_loader_test):
             
             #Get batch of data
@@ -219,14 +239,21 @@ def train_model(config=config_default):
             inputs_test = inputs_test.to(device=config['device'], dtype = torch.float32)
             labels_test = labels_test.to(device=config['device'], dtype = torch.float32)
 
-            # Evaluating test loss and CC
+            # Forward pass test
             model_output_test,_,_,_,_,_,_,_ = model(inputs_test)
+            
+            # Evaluating test loss and CC, rRMSE
             loss_test = criterion(model_output_test, labels_test)
+            rmse_q1_test = criterion_rmse(model_output_test[:,0], labels_test[:,0]) # The first argument should be the "predicted value" and the second argument should be the "true value"
+            rmse_q2_test = criterion_rmse(model_output_test[:,1], labels_test[:,1]) # The first argument should be the "predicted value" and the second argument should be the "true value"
+
             cc_q1_test = corr2(model_output_test[:,0], labels_test[:, 0])
             cc_q2_test = corr2(model_output_test[:,1], labels_test[:, 1])
 
             # Sum the loss over the batches
             test_loss_total =+ loss_test.item()
+            test_rmse_q1_total =+ rmse_q1_test.item()
+            test_rmse_q2_total =+ rmse_q2_test.item()
             cc_q1_total =+ cc_q1_test.item()
             cc_q2_total =+ cc_q2_test.item()
 
@@ -235,6 +262,8 @@ def train_model(config=config_default):
             
         # Average the loss over the batch
         test_loss_avg = test_loss_total/len(data_loader_test)
+        test_rmse_q1_avg = test_rmse_q1_total/len(data_loader_test)
+        test_rmse_q2_avg = test_rmse_q2_total/len(data_loader_test)
         cc_q1_avg = cc_q1_total/len(data_loader_test)
         cc_q2_avg = cc_q2_total/len(data_loader_test)
         del inputs_test, labels_test, model_output_test
@@ -321,6 +350,12 @@ def train_model(config=config_default):
     model.load_state_dict(best_model['model_state_dict']) # Loading model State_dict
     
     # Inference Loop on validation data
+    val_loss_total = 0
+    val_rmse_q1_total = 0
+    val_rmse_q2_total = 0
+    cc_q1_total = 0
+    cc_q2_total = 0
+
     for i, data_val in enumerate(data_loader_validation):
         inputs_val, labels_val = data_val[0].reshape(-1, 4, 64, 64), data_val[1].reshape(-1, 2, 64, 64)
 
@@ -329,6 +364,21 @@ def train_model(config=config_default):
 
         # Forward pass
         model_output_val,_,_,_,_,_,_,_ = model(inputs_val)
+
+        # Calculate the loss and other offline metrics
+        loss_val = criterion(model_output_val, labels_val)
+        rmse_q1_val = criterion_rmse(model_output_val[:,0], labels_val[:,0]) # The first argument should be the "predicted value" and the second argument should be the "true value"
+        rmse_q2_val = criterion_rmse(model_output_val[:,1], labels_val[:,1]) # The first argument should be the "predicted value" and the second argument should be the "true value"
+        cc_q1 = corr2(model_output_val_normalized[:,0,:,:], labels_val_normalized[:,0,:,:])
+        cc_q2 = corr2(model_output_val_normalized[:,1,:,:], labels_val_normalized[:,1,:,:])
+
+        # Sum the loss over the batches
+        val_loss_total =+ loss_val.item()
+        val_rmse_q1_total =+ rmse_q1_val.item()
+        val_rmse_q2_total =+ rmse_q2_val.item()
+        cc_q1_total =+ cc_q1.item()
+        cc_q2_total =+ cc_q2.item()
+
 
         # Denormalizing Validation data [input and output]
         # inputs_val_normalized = denormalize_input(inputs_val)
@@ -344,15 +394,17 @@ def train_model(config=config_default):
         prediction = torch.cat((prediction, model_output_val_normalized), 0)
         true = torch.cat((true, labels_val_normalized), 0)
         inputs = torch.cat((inputs, inputs_val_normalized), 0)
-
-        # Calculating the CC
-        cc_q1 = corr2(model_output_val_normalized[:,0,:,:], labels_val_normalized[:,0,:,:])
-        cc_q2 = corr2(model_output_val_normalized[:,1,:,:], labels_val_normalized[:,1,:,:])
-
+    
         print(f"Test Batch[{i+1}/{len(data_loader_validation)}]", end='\r')
         del inputs_test, label_test, model_output_test, inputs_test_normalized, label_test_normalized, model_output_test_normalized
-
-        # Calculating the average CC
+    
+    # Calculating the average CC
+    val_loss_avg = val_loss_total/len(data_loader_validation)
+    val_rmse_q1_avg = val_rmse_q1_total/len(data_loader_validation)
+    val_rmse_q2_avg = val_rmse_q2_total/len(data_loader_validation)
+    cc_q1_avg = cc_q1_total/len(data_loader_validation)
+    cc_q2_avg = cc_q2_total/len(data_loader_validation)
+    
 
 ################################################################################################################################
     # ------------------------------------------------------ Saving the outputs  ------------------------------------------------------ 
