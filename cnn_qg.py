@@ -98,7 +98,7 @@ config_default = {
           "batch_size_train": 8, 
           "learning_rate": 5e-5,
           "num_classes": 1,
-          "num_epochs": 5,
+          "num_epochs": 10,
           "data_fraction": 0.1, # Fraction of data to be trained 0<x<1 [Whole number of data is 87*2500 =  217500]
           "split_ratio": 0.9, # Ratio of train and test data
 
@@ -254,8 +254,8 @@ def train_model(config=config_default):
             test_loss_total =+ loss_test.item()
             test_rmse_q1_total =+ rmse_q1_test.item()
             test_rmse_q2_total =+ rmse_q2_test.item()
-            cc_q1_total =+ cc_q1_test.item()
-            cc_q2_total =+ cc_q2_test.item()
+            cc_q1_total =+ cc_q1_test
+            cc_q2_total =+ cc_q2_test
 
             # Print the progress in files
             print(f"Test Batch[{i+1}/{len(data_loader_test)}]", end='\r')
@@ -285,20 +285,20 @@ def train_model(config=config_default):
         if test_loss_avg < best_test_loss:
             best_test_loss = test_loss_avg
             # Save the model checkpoint XXXX
-            modelname = "BestModelBasedOnTestLoss.pt"
+            bestmodelname = "BestModelBasedOnTestLoss.pt"
             torch.save({
                         'model_state_dict': model.state_dict(),
                         'epoch' : epoch,
                         'optimizer_state_dict' : optimizer.state_dict(),
                         'loss' : loss,
                         'loss_test' : loss_test,
-                        },modelname)
+                        },bestmodelname)
             print("Checkpoint {} has been saved as the BEST model so far!".format(epoch+1))
         
         # Storing Loss, loss_test, cc histroy
         loss_epoch.append(train_loss_avg)
         loss_test_epoch.append(test_loss_avg)
-        print(f"Epoch[{epoch+1}/{config['num_epochs']}] TrainingLoss:{loss_epoch:10.3e} TestLoss:{loss_test_epoch[-1]:10.3e} CC_q1:{cc_q1_avg:10.3e} CC_q2:{cc_q2_avg:10.3e}")
+        print(f"Epoch[{epoch+1}/{config['num_epochs']}] TrainingLoss:{loss_epoch[-1]:10.3e} TestLoss:{loss_test_epoch[-1]:10.3e} CC_q1:{cc_q1_avg:10.3e} CC_q2:{cc_q2_avg:10.3e} rRMSE_q1:{test_rmse_q1_avg:10.3e} rRMSE_q2:{test_rmse_q2_avg:10.3e}")
         
         # scheduler.step()
 
@@ -315,14 +315,14 @@ def train_model(config=config_default):
         weights.append(getattr(model,layer_name).weight.data.cpu().numpy())
 
     # Save final model
-    modelname = "final_model_after_training.pt"
+    finalmodelname = "final_model_after_training.pt"
     torch.save({
                 'model_state_dict': model.state_dict(),
                 'epoch' : epoch,
                 'optimizer_state_dict' : optimizer.state_dict(),
                 'loss' : loss,
                 'loss_test' : loss_test,
-                },modelname)
+                },finalmodelname)
 
     print("---------------------------Trained model has been saved successfully!---------------------------")
 
@@ -345,7 +345,7 @@ def train_model(config=config_default):
     prediction = torch.tensor([], dtype = torch.float32)
     true = torch.tensor([], dtype = torch.float32)
     inputs = torch.tensor([], dtype = torch.float32)
-    best_model_path = 'best_model.pt' # PATH
+    best_model_path = bestmodelname # PATH of the best model: This can be changed "finalmodelname"
     best_model = torch.load(best_model_path) # Loading Model
     model.load_state_dict(best_model['model_state_dict']) # Loading model State_dict
     
@@ -361,6 +361,7 @@ def train_model(config=config_default):
 
         # Move tensors to the configured device
         inputs_val = inputs_val.to(device=config['device'], dtype = torch.float32)
+        labels_val = labels_val.to(device=config['device'], dtype = torch.float32)
 
         # Forward pass
         model_output_val,_,_,_,_,_,_,_ = model(inputs_val)
@@ -369,16 +370,16 @@ def train_model(config=config_default):
         loss_val = criterion(model_output_val, labels_val)
         rmse_q1_val = criterion_rmse(model_output_val[:,0], labels_val[:,0]) # The first argument should be the "predicted value" and the second argument should be the "true value"
         rmse_q2_val = criterion_rmse(model_output_val[:,1], labels_val[:,1]) # The first argument should be the "predicted value" and the second argument should be the "true value"
-        cc_q1 = corr2(model_output_val_normalized[:,0,:,:], labels_val_normalized[:,0,:,:])
-        cc_q2 = corr2(model_output_val_normalized[:,1,:,:], labels_val_normalized[:,1,:,:])
+
+        cc_q1 = corr2(model_output_val[:,0], labels_val[:,0])
+        cc_q2 = corr2(model_output_val[:,1], labels_val[:,1])
 
         # Sum the loss over the batches
         val_loss_total =+ loss_val.item()
         val_rmse_q1_total =+ rmse_q1_val.item()
         val_rmse_q2_total =+ rmse_q2_val.item()
-        cc_q1_total =+ cc_q1.item()
-        cc_q2_total =+ cc_q2.item()
-
+        cc_q1_total =+ cc_q1
+        cc_q2_total =+ cc_q2
 
         # Denormalizing Validation data [input and output]
         # inputs_val_normalized = denormalize_input(inputs_val)
@@ -386,17 +387,17 @@ def train_model(config=config_default):
         # model_output_val_normalized = denormalize_output(model_output_val)
 
         # Detach from GPU
-        model_output_val_normalized = model_output_val_normalized.detach().cpu()
-        labels_val_normalized = labels_val_normalized.detach().cpu()
-        inputs_val_normalized = inputs_val_normalized.detach().cpu()
+        inputs_val = inputs_val.detach().cpu()
+        labels_val = labels_val.detach().cpu()
+        model_output_val = model_output_val.detach().cpu()
 
         # Storing the data
-        prediction = torch.cat((prediction, model_output_val_normalized), 0)
-        true = torch.cat((true, labels_val_normalized), 0)
-        inputs = torch.cat((inputs, inputs_val_normalized), 0)
+        prediction = torch.cat((prediction, model_output_val), 0)
+        true = torch.cat((true, labels_val), 0)
+        inputs = torch.cat((inputs, inputs_val), 0)
     
         print(f"Test Batch[{i+1}/{len(data_loader_validation)}]", end='\r')
-        del inputs_test, label_test, model_output_test, inputs_test_normalized, label_test_normalized, model_output_test_normalized
+        del inputs_val, labels_val, model_output_val
     
     # Calculating the average CC
     val_loss_avg = val_loss_total/len(data_loader_validation)
