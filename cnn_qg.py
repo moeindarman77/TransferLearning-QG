@@ -98,9 +98,12 @@ config_default = {
           "batch_size_train": 8, 
           "learning_rate": 5e-5,
           "num_classes": 1,
-          "num_epochs": 10,
+          "num_epochs": 3,
           "data_fraction": 0.1, # Fraction of data to be trained 0<x<1 [Whole number of data is 87*2500 =  217500]
-          "split_ratio": 0.9, # Ratio of train and test data
+          "train_fraction": 0.8, # Ratio of train and test data
+          "val_fraction":0.1, # Ratio of validation data
+          "test_fraction":0.1, # Ratio of test data
+
 
          }
 
@@ -149,25 +152,56 @@ def train_model(config=config_default):
                         output_directory=y_train_path, 
                         variable_names={'input': ['u', 'v'], 'output': ['q']},
                         data_fraction = config['data_fraction'],
-                        normalize_input=True,
-                        normalize_output=True,)
+                        )
     
-    # 2.3 Splitting the data to train and test and validation
-    split_ratio = config['split_ratio']
-    train_size = int(split_ratio * len(nc_dataset))
-    test_size = len(nc_dataset) - train_size
+    # 2.3 Define the size of each split
+    train_fraction = config['train_fraction']  # 80% of the data for training
+    val_fraction = config['val_fraction']  # 10% of the data for validation
+    test_fraction = config['test_fraction']  # 10% of the data for testing
 
-    # 2.4 Split test to test and validation
-    split_ratio_test_validation = 0.5
-    test_size = int(split_ratio_test_validation * test_size)
-    validation_size = len(nc_dataset) - train_size - test_size
+    # 2.4 Calculate the number of samples for each split
+    num_samples = len(nc_dataset)
+    train_end = int(num_samples * train_fraction)
+    val_end = train_end + int(num_samples * val_fraction)
 
-    train_dataset, test_dataset, validation_dataset = torch.utils.data.random_split(nc_dataset, [train_size, test_size, validation_size])
+    # 2.5 Split the dataset
+    train_dataset = torch.utils.data.Subset(nc_dataset, range(0, train_end))
+    validation_dataset = torch.utils.data.Subset(nc_dataset, range(train_end, val_end))
+    test_dataset = torch.utils.data.Subset(nc_dataset, range(val_end, num_samples))
 
-    # 2.5 Use the dataset with a DataLoader
+    # 2.6 Calculate the mean and standard deviation of different sets
+    input_mean_train, input_std_train, output_mean_train, output_std_train = train_dataset.dataset.get_means_and_stds(indices=train_dataset.indices)
+    # input_mean, input_std, output_mean, output_std = train_dataset.dataset.get_means_and_stds(train_dataset.indices)
+    # input_mean_test, input_std_test, output_mean_test, output_std_test = test_dataset.dataset.get_means_and_stds(test_dataset.indices)
+    # input_mean_val, input_std_val, output_mean_val, output_std_val = validation_dataset.dataset.get_means_and_stds(validation_dataset.indices)
+
+################################################################################################################################
+    ## IMPORTANT NOTE ABOUT DATALOADER: The dataloader is written in a way that if you pass the mean and std of the data set, it will normalize the data based on that. 
+    # IF you want the normalize to be off, you can pass None for the mean and std. The default is None. 
+    # # Be careful: when you pass the mean and std of the training set, the data would be always normalized, unless you pass None for the mean and std.
+################################################################################################################################
+
+    # Get the mean std of the training set
+    train_dataset.dataset.input_mean = input_mean_train
+    train_dataset.dataset.input_std = input_std_train
+    train_dataset.dataset.output_mean = output_mean_train
+    train_dataset.dataset.output_std = output_std_train
+    
+    # # Get the mean std of the test set
+    test_dataset.dataset.input_mean = input_mean_train
+    test_dataset.dataset.input_std = input_std_train
+    test_dataset.dataset.output_mean = output_mean_train
+    test_dataset.dataset.output_std = output_std_train
+
+    validation_dataset.dataset.input_mean = input_mean_train
+    validation_dataset.dataset.input_std = input_std_train
+    validation_dataset.dataset.output_mean = output_mean_train
+    validation_dataset.dataset.output_std = output_std_train
+
+    # 2.8 Use the dataset with a DataLoader
     data_loader_train = torch.utils.data.DataLoader(train_dataset, batch_size=1, shuffle=True)
-    data_loader_test = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=True)
-    data_loader_validation = torch.utils.data.DataLoader(validation_dataset, batch_size=1, shuffle=True)
+    data_loader_validation = torch.utils.data.DataLoader(validation_dataset, batch_size=1, shuffle=False)
+    data_loader_test = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False)
 
     ################################################################################################################################ 
                                 # --------------------------- Training Part ---------------------------#
@@ -382,19 +416,15 @@ def train_model(config=config_default):
         cc_q2_total =+ cc_q2
 
         # Denormalizing Validation data [input and output]
-        # inputs_val_normalized = denormalize_input(inputs_val)
-        # labels_val_normalized = denormalize_output(labels_val)
-        # model_output_val_normalized = denormalize_output(model_output_val)
-
-        # Detach from GPU
-        inputs_val = inputs_val.detach().cpu()
-        labels_val = labels_val.detach().cpu()
-        model_output_val = model_output_val.detach().cpu()
-
+        inputs_val_denormalized = inputs_val * input_std_train[None, :, None, None].cuda() + input_mean_train[None, :, None, None].cuda()
+        labels_val_denormalized = labels_val * output_std_train[None, :, None, None].cuda() + output_mean_train[None, :, None, None].cuda()
+        model_output_val_denormalized = model_output_val * output_std_train[None, :, None, None].cuda() + output_mean_train[None, :, None, None].cuda()
+        
         # Storing the data
-        prediction = torch.cat((prediction, model_output_val), 0)
-        true = torch.cat((true, labels_val), 0)
-        inputs = torch.cat((inputs, inputs_val), 0)
+        inputs = torch.cat((inputs, inputs_val_denormalized.detach().cpu()), 0)
+        true = torch.cat((true, labels_val_denormalized.detach().cpu()), 0)
+        prediction = torch.cat((prediction, model_output_val_denormalized.detach().cpu()), 0)
+        
     
         print(f"Test Batch[{i+1}/{len(data_loader_validation)}]", end='\r')
         del inputs_val, labels_val, model_output_val
@@ -403,8 +433,8 @@ def train_model(config=config_default):
     val_loss_avg = val_loss_total/len(data_loader_validation)
     val_rmse_q1_avg = val_rmse_q1_total/len(data_loader_validation)
     val_rmse_q2_avg = val_rmse_q2_total/len(data_loader_validation)
-    cc_q1_avg = cc_q1_total/len(data_loader_validation)
-    cc_q2_avg = cc_q2_total/len(data_loader_validation)
+    cc_q1_val_avg = cc_q1_total/len(data_loader_validation)
+    cc_q2_val_avg = cc_q2_total/len(data_loader_validation)
     
 
 ################################################################################################################################
@@ -414,10 +444,18 @@ def train_model(config=config_default):
 
     plot_loss(loss_epoch, loss_test_epoch, save_fig=True, fig_name='loss.pdf')
 
-    # # Dumping the output to txt file
+    # Dumping the output to txt file
     # file_name = 'metrics_lr' + str(config['learning_rate']) + '_bs' + str(config['batch_size_train']) + '.txt'
-    # with open(file_name, "w") as f:
-    #     json.dump(ccs, f)
+    offline_metrics = {"best_test_loss":best_test_loss,
+                        "validation_loss":val_loss_avg,
+                        "validation_rmse_q1":val_rmse_q1_avg,
+                        "validation_rmse_q2":val_rmse_q2_avg,
+                        "validation_cc_q1":cc_q1_val_avg,
+                        "validation_cc_q2":cc_q2_val_avg,
+    }
+    file_name = "metrics.txt"
+    with open(file_name, "w") as f:
+        json.dump(offline_metrics, f)
 
     # Save the output in .nc file
     ## Saving the output data to .mat file
