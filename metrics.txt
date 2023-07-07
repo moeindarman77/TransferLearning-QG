@@ -1,0 +1,1 @@
+{"best_test_loss": 0.006235269904136658, "validation_loss": 0.0057569962739944455, "validation_rmse_q1": 0.009994692802429199, "validation_rmse_q2": 0.01880490779876709, "validation_cc_q1": 0.03654193639755249, "validation_cc_q2": 0.033572635650634765}
