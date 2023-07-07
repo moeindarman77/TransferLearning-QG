@@ -470,12 +470,14 @@ import logging
 from netCDF4 import Dataset
 from torch.utils.data import Dataset as TorchDataset
 import torch
-    
+import numpy as np
+
 class NCDataset(TorchDataset):
     """
     Dataset for loading NetCDF files.
     """
-    def __init__(self, input_directory: str, output_directory: str, variable_names: dict, data_fraction: float = 1.0, normalize_input: bool = False, normalize_output: bool = False):
+
+    def __init__(self, input_directory: str, output_directory: str, variable_names: dict, data_fraction: float = 1.0):
         """
         :param input_directory: Directory where the input .nc files are stored.
         :param output_directory: Directory where the output .nc files are stored.
@@ -486,28 +488,12 @@ class NCDataset(TorchDataset):
         self.output_directory = output_directory
         self.variable_names = variable_names
         self.data_fraction = data_fraction
-        self.normalize_input = normalize_input
-        self.normalize_output = normalize_output
         self.input_files = self._load_files(input_directory)
         self.output_files = self._load_files(output_directory)
-
-        if normalize_input or normalize_output:
-            self._calculate_normalization_parameters()
-
-    def _calculate_normalization_parameters(self):
-        """
-        Calculate normalization parameters (mean, std) for the entire dataset.
-        """
-        all_input_data = [self.load_nc_files(self.input_directory, var, idx) for idx in range(len(self.input_files)) for var in self.variable_names['input']]
-        all_output_data = [self.load_nc_files(self.output_directory, var, idx) for idx in range(len(self.output_files)) for var in self.variable_names['output']]
-
-        if self.normalize_input:
-            self.input_mean = np.mean(all_input_data)
-            self.input_std = np.std(all_input_data)
-
-        if self.normalize_output:
-            self.output_mean = np.mean(all_output_data)
-            self.output_std = np.std(all_output_data)
+        self.input_mean = None
+        self.input_std = None
+        self.output_mean = None
+        self.output_std = None
 
     @staticmethod
     def load_nc_files(directory: str, variable_name: str, file_index: int):
@@ -562,34 +548,43 @@ class NCDataset(TorchDataset):
         files = files[:num_files]
         
         return files
-    
+
     def __len__(self):
-        """
-        Get the number of .nc files in the directory.
-
-        :return: Number of .nc files in the directory.
-        """
         return len(self.input_files)
-    
+
     def __getitem__(self, idx: int):
-            inputs = [self.load_nc_files(self.input_directory, var, idx) for var in self.variable_names['input']]
-            outputs = [self.load_nc_files(self.output_directory, var, idx) for var in self.variable_names['output']]
-            
-            if any(v is None for v in inputs+outputs):
-                return None
+        inputs = [self.load_nc_files(self.input_directory, var, idx) for var in self.variable_names['input']]
+        outputs = [self.load_nc_files(self.output_directory, var, idx) for var in self.variable_names['output']]
 
-            inputs = [torch.from_numpy(data) for data in inputs]
-            outputs = [torch.from_numpy(data) for data in outputs]
+        if any(v is None for v in inputs+outputs):
+            return None
 
-            # Normalize inputs if flag is set
-            if self.normalize_input:
-                inputs = [(x - torch.mean(x)) / torch.std(x) for x in inputs]
-            
-            # Normalize outputs if flag is set
-            if self.normalize_output:
-                outputs = [(x - torch.mean(x)) / torch.std(x) for x in outputs]
+        inputs = [torch.from_numpy(data) for data in inputs]
+        outputs = [torch.from_numpy(data) for data in outputs]
 
-            inputs = torch.cat(inputs, dim=1)
-            outputs = torch.cat(outputs, dim=1)
+        inputs = torch.cat(inputs, dim=1)
+        outputs = torch.cat(outputs, dim=1)
 
-            return inputs, outputs
+        if self.input_mean is not None and self.input_std is not None:
+            inputs = self.normalize(inputs, self.input_mean, self.input_std)
+
+        if self.output_mean is not None and self.output_std is not None:
+            outputs = self.normalize(outputs, self.output_mean, self.output_std)
+
+        return inputs, outputs
+
+    def get_means_and_stds(self, indices):
+        all_input_data = [self.__getitem__(idx)[0] for idx in indices]
+        all_output_data = [self.__getitem__(idx)[1] for idx in indices]
+        
+        input_mean = torch.mean(torch.cat(all_input_data, axis=0), axis=(0, 2, 3))
+        input_std = torch.std(torch.cat(all_input_data, axis=0), axis=(0, 2, 3))
+
+        output_mean = torch.mean(torch.cat(all_output_data, axis=0), axis=(0, 2, 3))
+        output_std = torch.std(torch.cat(all_output_data, axis=0), axis=(0, 2, 3))
+
+        return input_mean, input_std, output_mean, output_std
+
+    def normalize(self, data, mean, std):
+        return (data - mean[None, :, None, None]) / std[None, :, None, None]
+
