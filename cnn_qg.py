@@ -1,5 +1,6 @@
 # --------------------------- Importing Libraries ---------------------------
 print("--------------------------- Importing Libraries ---------------------------")
+import numpy as np
 from ray.air import session
 from torch.utils.data import DataLoader, Subset
 from scipy.io import savemat
@@ -53,20 +54,27 @@ class ConvNeuralNet(nn.Module):
                 
         def forward(self, x):
 
-                out1 = self.relu1(self.conv_layer1(x)) # Layer1 (Input Layer)    
+                out1_before = self.conv_layer1(x) # Layer1 (Input Layer)
+                out1_after = self.relu1(out1_before) # Layer1 (Input Layer)    
                 
                 ## Hidden Layers
-                out2 = self.relu1(self.conv_layer2(out1)) #Layer2
+                out2_before = self.conv_layer2(out1_after) #Layer2
+                out2_after = self.relu1(out2_before) #Layer2
             
-                out3 = self.relu1(self.conv_layer3(out2)) #Layer3
+                out3_before = self.conv_layer3(out2_after) #Layer3
+                out3_after = self.relu1(out3_before) #Layer3
 
-                out4 = self.relu1(self.conv_layer4(out3)) #Layer4
+                out4_before = self.conv_layer4(out3_after) #Layer4
+                out4_after = self.relu1(out4_before) #Layer4
 
-                out5 = self.relu1(self.conv_layer5(out4)) #Layer5
+                out5_before = self.conv_layer5(out4_after) #Layer5
+                out5_after = self.relu1(out5_before) #Layer5
 
-                out6 = self.relu1(self.conv_layer6(out5)) #Layer6
+                out6_before = self.conv_layer6(out5_after) #Layer6
+                out6_after = self.relu1(out6_before) #Layer6
 
-                out7 = self.relu1(self.conv_layer7(out6)) #Layer7
+                out7_before = self.conv_layer7(out6_after) #Layer7
+                out7_after = self.relu1(out7_before) #Layer7
 
                 # out8 = self.relu1(self.conv_layer8(out7)) #Layer8
 
@@ -74,11 +82,39 @@ class ConvNeuralNet(nn.Module):
 
                 # out10 = self.relu1(self.conv_layer10(out9)) #Layer10
                 
-                ####  !!! Do not forgety to chage teh output layer when changing the number of hidden layers !!! ####
+                ####  !!! Do not forget to change teh output layer when changing the number of hidden layers !!! ####
 
-                output = self.conv_layer11(out7) #Layer11 (Output Layer) 
-                return output, out1, out2, out3, out4, out5, out6, out7
+                output = self.conv_layer11(out7_after) #Layer11 (Output Layer) 
+                mid_ouptut = {'out1_before': out1_before, 'out1_after': out1_after, 'out2_before': out2_before, 'out2_after': out2_after, 'out3_before': out3_before, 'out3_after': out3_after, 'out4_before': out4_before, 'out4_after': out4_after, 'out5_before': out5_before, 'out5_after': out5_after, 'out6_before': out6_before, 'out6_after': out6_after, 'out7_before': out7_before, 'out7_after': out7_after}
+                return output, mid_ouptut
+        def store_activation(self, epoch, num_epochs, activation, mid_output, model_output):
+            # List of keys
+            keys = ['out1_before', 'out1_after', 'out2_before', 'out2_after',
+                    'out3_before', 'out3_after', 'out4_before', 'out4_after',
+                    'out5_before', 'out5_after', 'out6_before', 'out6_after',
+                    'out7_before', 'out7_after', 'output']
 
+            for key in keys:
+                # If the key is not present in the dictionary, initialize it
+                if key not in activation:
+                    if key != 'output':
+                        shape = mid_output[key].shape
+                    else:  # for 'output'
+                        shape = model_output.shape
+                    activation[key] = np.zeros((num_epochs,) + shape)
+
+                # Assign values
+                if key != 'output':
+                    activation[key][epoch] = mid_output[key].detach().cpu().numpy()
+                else:  # for 'output'
+                    activation[key][epoch] = model_output.detach().cpu().numpy()
+            return activation
+
+
+
+                
+
+# Define a function to calculate the rRMSE loss
 class rRMSELoss(nn.Module):
     def __init__(self):
         super().__init__()
@@ -98,8 +134,8 @@ config_default = {
           "batch_size_train": 8, 
           "learning_rate": 5e-5,
           "num_classes": 1,
-          "num_epochs": 3,
-          "data_fraction": 0.1, # Fraction of data to be trained 0<x<1 [Whole number of data is 87*2500 =  217500]
+          "num_epochs": 1,
+          "data_fraction": 0.01, # Fraction of data to be trained 0<x<1 [Whole number of data is 87*2500 =  217500]
           "train_fraction": 0.8, # Ratio of train and test data
           "val_fraction":0.1, # Ratio of validation data
           "test_fraction":0.1, # Ratio of test data
@@ -211,6 +247,7 @@ def train_model(config=config_default):
     cc_epoch = []
     weights = []
     best_test_loss = float('inf')
+    activations = {}
     print("--------------------------- Training Part ---------------------------")
 
     # 3. ------------------------------------------------------ Training Loop ------------------------------------------------------
@@ -233,7 +270,7 @@ def train_model(config=config_default):
             labels_train = labels_train.to(device=config['device'], dtype = torch.float32)
 
             # Forward pass train 
-            model_output,_,_,_,_,_,_,_ = model(inputs_train)
+            model_output, mid_output = model(inputs_train)
 
             # Calculate the loss, RMSE 
             loss = criterion(model_output, labels_train)
@@ -256,6 +293,8 @@ def train_model(config=config_default):
         train_loss_avg = train_loss_total/len(data_loader_train)
         train_rmse_q1_avg = train_rmse_q1_total/len(data_loader_train)
         train_rmse_q2_avg = train_rmse_q2_total/len(data_loader_train)
+        # Save the activattion
+        activations = model.store_activation(epoch, config['num_epochs'], activations, mid_output, model_output)
         del inputs_train, labels_train, model_output
         
         # ------------------------------------------------------ Test Loop ------------------------------------------------------
@@ -274,7 +313,7 @@ def train_model(config=config_default):
             labels_test = labels_test.to(device=config['device'], dtype = torch.float32)
 
             # Forward pass test
-            model_output_test,_,_,_,_,_,_,_ = model(inputs_test)
+            model_output_test,_ = model(inputs_test)
             
             # Evaluating test loss and CC, rRMSE
             loss_test = criterion(model_output_test, labels_test)
@@ -398,7 +437,7 @@ def train_model(config=config_default):
         labels_val = labels_val.to(device=config['device'], dtype = torch.float32)
 
         # Forward pass
-        model_output_val,_,_,_,_,_,_,_ = model(inputs_val)
+        model_output_val,_ = model(inputs_val)
 
         # Calculate the loss and other offline metrics
         loss_val = criterion(model_output_val, labels_val)
@@ -456,6 +495,24 @@ def train_model(config=config_default):
     file_name = "metrics.txt"
     with open(file_name, "w") as f:
         json.dump(offline_metrics, f)
+
+    # Dumping training mean and std
+    training_mean_std = {"input_mean_train":input_mean_train.tolist(),
+                        "input_std_train":input_std_train.tolist(),
+                        "output_mean_train":output_mean_train.tolist(),
+                        "output_std_train":output_std_train.tolist(),}
+    file_name = "training_mean_std.txt"
+    with open(file_name, "w") as f:
+        json.dump(training_mean_std, f)
+
+    import pickle
+
+    # Saving
+    with open('activation_dict.pkl', 'wb') as f:
+        pickle.dump(activations, f)
+
+
+    
 
     # Save the output in .nc file
     ## Saving the output data to .mat file
