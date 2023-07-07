@@ -87,7 +87,29 @@ class ConvNeuralNet(nn.Module):
                 output = self.conv_layer11(out7_after) #Layer11 (Output Layer) 
                 mid_ouptut = {'out1_before': out1_before, 'out1_after': out1_after, 'out2_before': out2_before, 'out2_after': out2_after, 'out3_before': out3_before, 'out3_after': out3_after, 'out4_before': out4_before, 'out4_after': out4_after, 'out5_before': out5_before, 'out5_after': out5_after, 'out6_before': out6_before, 'out6_after': out6_after, 'out7_before': out7_before, 'out7_after': out7_after}
                 return output, mid_ouptut
-        def store_activation(self, epoch, num_epochs, activation, mid_output, model_output):
+        # def store_activation(self, epoch, num_epochs, activation, mid_output, model_output):
+        #     # List of keys
+        #     keys = ['out1_before', 'out1_after', 'out2_before', 'out2_after',
+        #             'out3_before', 'out3_after', 'out4_before', 'out4_after',
+        #             'out5_before', 'out5_after', 'out6_before', 'out6_after',
+        #             'out7_before', 'out7_after', 'output']
+
+        #     for key in keys:
+        #         # If the key is not present in the dictionary, initialize it
+        #         if key not in activation:
+        #             if key != 'output':
+        #                 shape = mid_output[key].shape
+        #             else:  # for 'output'
+        #                 shape = model_output.shape
+        #             activation[key] = np.zeros((num_epochs,) + shape)
+
+        #         # Assign values
+        #         if key != 'output':
+        #             activation[key][epoch] = mid_output[key].detach().cpu().numpy()
+        #         else:  # for 'output'
+        #             activation[key][epoch] = model_output.detach().cpu().numpy()
+        #     return activation
+        def store_activation(self, activation, mid_output, model_output):
             # List of keys
             keys = ['out1_before', 'out1_after', 'out2_before', 'out2_after',
                     'out3_before', 'out3_after', 'out4_before', 'out4_after',
@@ -101,18 +123,14 @@ class ConvNeuralNet(nn.Module):
                         shape = mid_output[key].shape
                     else:  # for 'output'
                         shape = model_output.shape
-                    activation[key] = np.zeros((num_epochs,) + shape)
+                    activation[key] = np.zeros(shape)
 
                 # Assign values
                 if key != 'output':
-                    activation[key][epoch] = mid_output[key].detach().cpu().numpy()
+                    activation[key] = mid_output[key].detach().cpu().numpy()
                 else:  # for 'output'
-                    activation[key][epoch] = model_output.detach().cpu().numpy()
+                    activation[key] = model_output.detach().cpu().numpy()
             return activation
-
-
-
-                
 
 # Define a function to calculate the rRMSE loss
 class rRMSELoss(nn.Module):
@@ -122,7 +140,6 @@ class rRMSELoss(nn.Module):
 
     def forward(self, yhat, y):
         return torch.sqrt(self.mse(yhat, y)) / torch.sqrt(torch.mean(y**2))
-
 
 ################################################################################################################################
                         # --------------------------- Setting up Hyper-Parmeters for CNN --------------------------- #
@@ -270,7 +287,7 @@ def train_model(config=config_default):
             labels_train = labels_train.to(device=config['device'], dtype = torch.float32)
 
             # Forward pass train 
-            model_output, mid_output = model(inputs_train)
+            model_output,_ = model(inputs_train)
 
             # Calculate the loss, RMSE 
             loss = criterion(model_output, labels_train)
@@ -294,7 +311,7 @@ def train_model(config=config_default):
         train_rmse_q1_avg = train_rmse_q1_total/len(data_loader_train)
         train_rmse_q2_avg = train_rmse_q2_total/len(data_loader_train)
         # Save the activattion
-        activations = model.store_activation(epoch, config['num_epochs'], activations, mid_output, model_output)
+        # activations = model.store_activation(epoch, config['num_epochs'], activations, mid_output, model_output)
         del inputs_train, labels_train, model_output
         
         # ------------------------------------------------------ Test Loop ------------------------------------------------------
@@ -437,7 +454,7 @@ def train_model(config=config_default):
         labels_val = labels_val.to(device=config['device'], dtype = torch.float32)
 
         # Forward pass
-        model_output_val,_ = model(inputs_val)
+        model_output_val,mid_output_val = model(inputs_val)
 
         # Calculate the loss and other offline metrics
         loss_val = criterion(model_output_val, labels_val)
@@ -466,7 +483,8 @@ def train_model(config=config_default):
         
     
         print(f"Test Batch[{i+1}/{len(data_loader_validation)}]", end='\r')
-        del inputs_val, labels_val, model_output_val
+    activations = model.store_activation(activations, mid_output_val, model_output_val)
+    del inputs_val, labels_val, model_output_val
     
     # Calculating the average CC
     val_loss_avg = val_loss_total/len(data_loader_validation)
@@ -474,13 +492,12 @@ def train_model(config=config_default):
     val_rmse_q2_avg = val_rmse_q2_total/len(data_loader_validation)
     cc_q1_val_avg = cc_q1_total/len(data_loader_validation)
     cc_q2_val_avg = cc_q2_total/len(data_loader_validation)
-    
 
 ################################################################################################################################
     # ------------------------------------------------------ Saving the outputs  ------------------------------------------------------ 
 ################################################################################################################################
     print("--------------------------- Saving the outputs ---------------------------")
-
+    import pickle
     plot_loss(loss_epoch, loss_test_epoch, save_fig=True, fig_name='loss.pdf')
 
     # Dumping the output to txt file
@@ -491,12 +508,15 @@ def train_model(config=config_default):
                         "validation_rmse_q2":val_rmse_q2_avg,
                         "validation_cc_q1":cc_q1_val_avg,
                         "validation_cc_q2":cc_q2_val_avg,
+                        "training_loss":loss_epoch,
+                        "test_loss":loss_test_epoch,
     }
     file_name = "metrics.txt"
     with open(file_name, "w") as f:
         json.dump(offline_metrics, f)
+        print("Metrics saved in file: ", file_name)
 
-    # Dumping training mean and std
+    # Saving the trianing statistics
     training_mean_std = {"input_mean_train":input_mean_train.tolist(),
                         "input_std_train":input_std_train.tolist(),
                         "output_mean_train":output_mean_train.tolist(),
@@ -504,46 +524,38 @@ def train_model(config=config_default):
     file_name = "training_mean_std.txt"
     with open(file_name, "w") as f:
         json.dump(training_mean_std, f)
+        print("Training mean and std saved in file: ", file_name)
 
-    import pickle
-
-    # Saving
-    with open('activation_dict.pkl', 'wb') as f:
+    # Saving activations
+    file_name = "activation_dict.pkl"
+    with open(file_name, 'wb') as f:
         pickle.dump(activations, f)
+        print("Activations saved in file: ", file_name)
 
-
+    # Saving the weights
+    file_name = "weights_dict.pkl"
+    with open(file_name, 'wb') as f:
+        pickle.dump(weights, f)
+        print("Weights saved in file: ", file_name)
     
-
     # Save the output in .nc file
     ## Saving the output data to .mat file
     output = {
                 "prediction":prediction.numpy(), 
                 "true":true.numpy(),
                 "inputs": inputs.numpy(),
-                "weights":weights,
-                "train_loss":loss_epoch,
-                "test_loss":loss_test_epoch,
                 }
     
-    # Save the output in the .nc file
-    
-    # filename = "Data.mat"
-    # savemat(filename, output)
-
-    
+    # ------------------------------------------------------ Save .nc file ------------------------------------------------------
     # Create a new .nc file
     rootgrp = nc.Dataset("output.nc", "w", format="NETCDF4")
 
     # Define the dimensions of the data
     num_of_samples = rootgrp.createDimension("num_of_samples", prediction.shape[0])
-    
     input_channel = rootgrp.createDimension("input_channel", inputs.shape[1])
     output_channel = rootgrp.createDimension("output_channel", prediction.shape[1])
-
     y_dim = rootgrp.createDimension("y_dim", prediction.shape[2])
     x_dim = rootgrp.createDimension("x_dim", prediction.shape[3])
-
-    num_epochs = rootgrp.createDimension("num_epochs", config['num_epochs'])
 
     # Create the variables
     variables = {}
@@ -551,17 +563,15 @@ def train_model(config=config_default):
 
         if key in ["inputs"]:
             variables[key] = rootgrp.createVariable(key, "f4", ("num_of_samples", "input_channel", "y_dim", "x_dim"))
+            variables[key][:] = value  # write the data to the file
 
-        elif key in ["prediciton", "true"]:
+        elif key in ["prediction", "true"]:
              variables[key] = rootgrp.createVariable(key, "f4", ("num_of_samples", "output_channel", "y_dim", "x_dim"))
-
-        elif key in ["train_loss", "test_loss"]:
-            variables[key] = rootgrp.createVariable(key,"f4", ("num_epochs",))
-        # else:
-        #     variables[key] = value
+             variables[key][:] = value  # write the data to the file
 
     # Close the .nc file
     rootgrp.close()
+
 
     print("--------------------------- Model has been trained succesfully! ---------------------------")
     # return metric
