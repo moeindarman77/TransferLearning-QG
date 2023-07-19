@@ -149,15 +149,14 @@ print("--------------------------- Setting up Hyper-Parmeters for CNN ----------
 config_default = {
           "device": torch.device('cuda' if torch.cuda.is_available() else 'cpu'), 
           "batch_size_train": 8, 
-          "learning_rate": 5e-5,
+          "learning_rate": 1e-4,
           "num_classes": 1,
-          "num_epochs": 1,
-          "data_fraction": 0.01, # Fraction of data to be trained 0<x<1 [Whole number of data is 87*2500 =  217500]
-          "train_fraction": 0.8, # Ratio of train and test data
-          "val_fraction":0.1, # Ratio of validation data
-          "test_fraction":0.1, # Ratio of test data
-
-
+          "num_epochs": 40,
+          "data_fraction": 0.7, # Fraction of data to be trained 0<x<1 [Whole number of data is 87*2500 =  217500] [For 0.23 * 0.8 * 217000 = 39,928 I get almost 40,000 samples Ashesh trained with.]
+          "train_fraction": 0.9, # Ratio of train and test data
+          "val_fraction":0.05, # Ratio of validation data
+          "test_fraction":0.05, # Ratio of test data
+          "skip_first_snap": 80, # Number of snapshots to skip from the beginning of each file
          }
 
 ################################################################################################################################
@@ -171,6 +170,8 @@ def train_model(config=config_default):
 
     # 0. Model Initialization
     model = ConvNeuralNet(config["num_classes"]).to(config["device"])
+    model.double()  # Convert to float64
+
 
     print('**** Number of Trainable Parameters in BNN ****')
     count_parameters(model)
@@ -182,10 +183,11 @@ def train_model(config=config_default):
     # 0.2 Set the optimizer (Adam)
     optimizer = torch.optim.Adam(model.parameters(), lr= config['learning_rate'], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad = True)
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-9, last_epoch=- 1, verbose=True)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=3, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=True)
+    
     
     # --------------------------- Loading DATA ---------------------------
     print("--------------------------- Loading DATA ---------------------------")
-
     # 1. Loading the base model (Optional)[For Transfer Learning purpose]
     '''    
     print("---Loading Base model---")
@@ -203,8 +205,9 @@ def train_model(config=config_default):
     # 2.2 Create a dataset
     nc_dataset = NCDataset(input_directory=x_train_path, 
                         output_directory=y_train_path, 
-                        variable_names={'input': ['u', 'v'], 'output': ['q']},
+                        variable_names={'input': ['u', 'v'], 'output': ['q_forcing_advection']},
                         data_fraction = config['data_fraction'],
+                        skip_first_snap = config['skip_first_snap']
                         )
     
     # 2.3 Define the size of each split
@@ -281,13 +284,13 @@ def train_model(config=config_default):
 
             # Get batch of data
             inputs_train, labels_train = data_train[0].reshape(-1, 4, 64, 64), data_train[1].reshape(-1, 2, 64, 64)
-        
+
             # Move tensors to the configured device with right data type
-            inputs_train = inputs_train.to(device=config['device'], dtype = torch.float32)
-            labels_train = labels_train.to(device=config['device'], dtype = torch.float32)
+            inputs_train = inputs_train.to(device=config['device'], dtype = torch.float64)
+            labels_train = labels_train.to(device=config['device'], dtype = torch.float64)
 
             # Forward pass train 
-            model_output,_ = model(inputs_train)
+            model_output, _ = model(inputs_train)
 
             # Calculate the loss, RMSE 
             loss = criterion(model_output, labels_train)
@@ -320,14 +323,15 @@ def train_model(config=config_default):
         test_rmse_q2_total = 0
         cc_q1_total = 0
         cc_q2_total = 0
+        scale = 1e0
         for i, data_test in enumerate(data_loader_test):
             
             #Get batch of data
             inputs_test, labels_test = data_test[0].reshape(-1, 4, 64, 64), data_test[1].reshape(-1, 2, 64, 64)
             
             # Move tensors to the configured device
-            inputs_test = inputs_test.to(device=config['device'], dtype = torch.float32)
-            labels_test = labels_test.to(device=config['device'], dtype = torch.float32)
+            inputs_test = inputs_test.to(device=config['device'], dtype = torch.float64)
+            labels_test = labels_test.to(device=config['device'], dtype = torch.float64)
 
             # Forward pass test
             model_output_test,_ = model(inputs_test)
@@ -336,9 +340,11 @@ def train_model(config=config_default):
             loss_test = criterion(model_output_test, labels_test)
             rmse_q1_test = criterion_rmse(model_output_test[:,0], labels_test[:,0]) # The first argument should be the "predicted value" and the second argument should be the "true value"
             rmse_q2_test = criterion_rmse(model_output_test[:,1], labels_test[:,1]) # The first argument should be the "predicted value" and the second argument should be the "true value"
-
-            cc_q1_test = corr2(model_output_test[:,0], labels_test[:, 0])
-            cc_q2_test = corr2(model_output_test[:,1], labels_test[:, 1])
+    
+            # cc_q1_test = corr2(model_output_test[:,0]* output_std_train[None, 0, None, None].cuda() + output_mean_train[None, 0, None, None].cuda(), labels_test[:,0]* output_std_train[None, 0, None, None].cuda() + output_mean_train[None, 0, None, None].cuda())
+            # cc_q2_test = corr2(model_output_test[:,1]* output_std_train[None, 1, None, None].cuda() + output_mean_train[None, 1, None, None].cuda(), labels_test[:,1]* output_std_train[None, 1, None, None].cuda() + output_mean_train[None, 1, None, None].cuda())
+            cc_q1_test = corr2(model_output_test[:,0], labels_test[:,0])
+            cc_q2_test = corr2(model_output_test[:,1], labels_test[:,1])
 
             # Sum the loss over the batches
             test_loss_total =+ loss_test.item()
@@ -391,6 +397,7 @@ def train_model(config=config_default):
         print(f"Epoch[{epoch+1}/{config['num_epochs']}] TrainingLoss:{loss_epoch[-1]:10.3e} TestLoss:{loss_test_epoch[-1]:10.3e} CC_q1:{cc_q1_avg:10.3e} CC_q2:{cc_q2_avg:10.3e} rRMSE_q1:{test_rmse_q1_avg:10.3e} rRMSE_q2:{test_rmse_q2_avg:10.3e}")
         
         # scheduler.step()
+        scheduler.step(test_loss_avg)
 
         # Clear the GPU memory cache and all variables stored on GPU
         torch.cuda.empty_cache()
@@ -420,7 +427,6 @@ def train_model(config=config_default):
                                     # --------------------------- Inference Part ---------------------------
     ################################################################################################################################
     print("--------------------------- Inference Part ---------------------------")
-
     '''
     # This is just for the evaluation (Optional)
     base_model_path = 'model.pt' # PATH
@@ -429,12 +435,10 @@ def train_model(config=config_default):
     #optimizer.load_state_dict(base_model['optimizer_state_dict']) # Optimizer Loading
     '''
 
-    data_loader_test = DataLoader(test_dataset, batch_size=1, shuffle=False)
-
     # Initialzing the inference Initializng the
-    prediction = torch.tensor([], dtype = torch.float32)
-    true = torch.tensor([], dtype = torch.float32)
-    inputs = torch.tensor([], dtype = torch.float32)
+    prediction = torch.tensor([], dtype = torch.float64)
+    true = torch.tensor([], dtype = torch.float64)
+    inputs = torch.tensor([], dtype = torch.float64)
     best_model_path = bestmodelname # PATH of the best model: This can be changed "finalmodelname"
     best_model = torch.load(best_model_path) # Loading Model
     model.load_state_dict(best_model['model_state_dict']) # Loading model State_dict
@@ -450,8 +454,8 @@ def train_model(config=config_default):
         inputs_val, labels_val = data_val[0].reshape(-1, 4, 64, 64), data_val[1].reshape(-1, 2, 64, 64)
 
         # Move tensors to the configured device
-        inputs_val = inputs_val.to(device=config['device'], dtype = torch.float32)
-        labels_val = labels_val.to(device=config['device'], dtype = torch.float32)
+        inputs_val = inputs_val.to(device=config['device'], dtype = torch.float64)
+        labels_val = labels_val.to(device=config['device'], dtype = torch.float64)
 
         # Forward pass
         model_output_val,mid_output_val = model(inputs_val)
@@ -461,8 +465,8 @@ def train_model(config=config_default):
         rmse_q1_val = criterion_rmse(model_output_val[:,0], labels_val[:,0]) # The first argument should be the "predicted value" and the second argument should be the "true value"
         rmse_q2_val = criterion_rmse(model_output_val[:,1], labels_val[:,1]) # The first argument should be the "predicted value" and the second argument should be the "true value"
 
-        cc_q1 = corr2(model_output_val[:,0], labels_val[:,0])
-        cc_q2 = corr2(model_output_val[:,1], labels_val[:,1])
+        cc_q1 = corr2(model_output_val[:,0]*scale, labels_val[:,0]*scale)
+        cc_q2 = corr2(model_output_val[:,1]*scale, labels_val[:,1]*scale)
 
         # Sum the loss over the batches
         val_loss_total =+ loss_val.item()
