@@ -139,3 +139,6 @@ dmypy.json
 
 # matlab file
 *.mat
+
+# .pkl
+*.pkl
