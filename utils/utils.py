@@ -477,7 +477,7 @@ class NCDataset(TorchDataset):
     Dataset for loading NetCDF files.
     """
 
-    def __init__(self, input_directory: str, output_directory: str, variable_names: dict, data_fraction: float = 1.0):
+    def __init__(self, input_directory: str, output_directory: str, variable_names: dict, data_fraction: float = 1.0, skip_first_snap: int = 0):
         """
         :param input_directory: Directory where the input .nc files are stored.
         :param output_directory: Directory where the output .nc files are stored.
@@ -488,6 +488,7 @@ class NCDataset(TorchDataset):
         self.output_directory = output_directory
         self.variable_names = variable_names
         self.data_fraction = data_fraction
+        self.skip_first_snap = skip_first_snap
         self.input_files = self._load_files(input_directory)
         self.output_files = self._load_files(output_directory)
         self.input_mean = None
@@ -496,7 +497,7 @@ class NCDataset(TorchDataset):
         self.output_std = None
 
     @staticmethod
-    def load_nc_files(directory: str, variable_name: str, file_index: int):
+    def load_nc_files(directory: str, variable_name: str, file_index: int, skip_first_snap: int = 0):
         """
         Load data from a .nc file.
 
@@ -526,7 +527,7 @@ class NCDataset(TorchDataset):
                     logging.error(f"Variable {variable_name} not found in the file.")
                     return None
 
-                data = nc_file.variables[variable_name][:]
+                data = nc_file.variables[variable_name][skip_first_snap:] # Skip first 60 timesteps
         except Exception as e:
             logging.error(f"Error reading the .nc file: {str(e)}")
             return None
@@ -553,8 +554,8 @@ class NCDataset(TorchDataset):
         return len(self.input_files)
 
     def __getitem__(self, idx: int):
-        inputs = [self.load_nc_files(self.input_directory, var, idx) for var in self.variable_names['input']]
-        outputs = [self.load_nc_files(self.output_directory, var, idx) for var in self.variable_names['output']]
+        inputs = [self.load_nc_files(self.input_directory, var, idx, self.skip_first_snap) for var in self.variable_names['input']]
+        outputs = [self.load_nc_files(self.output_directory, var, idx, self.skip_first_snap) for var in self.variable_names['output']]
 
         if any(v is None for v in inputs+outputs):
             return None
