@@ -442,8 +442,8 @@ def plot_loss(train_loss, test_loss, save_fig=False, fig_name=None):
     # Set the x and y axis limits
     xmin, xmax = 1, len(epoch)
     ymin, ymax = min(train_loss) or min(test_loss), max(train_loss) or max(test_loss)
-    axs.set_xlim(xmin, xmax)
-    axs.set_ylim(ymin, ymax)
+    # axs.set_xlim(xmin, xmax)
+    # axs.set_ylim(ymin, ymax)
     axs.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     # Set equal aspect ratio for the subplots
@@ -472,6 +472,123 @@ from torch.utils.data import Dataset as TorchDataset
 import torch
 import numpy as np
 
+# class NCDataset(TorchDataset):
+#     """
+#     Dataset for loading NetCDF files.
+#     """
+
+#     def __init__(self, input_directory: str, output_directory: str, variable_names: dict, data_fraction: float = 1.0, skip_first_snap: int = 0):
+#         """
+#         :param input_directory: Directory where the input .nc files are stored.
+#         :param output_directory: Directory where the output .nc files are stored.
+#         :param variable_names: Dictionary of variable names to load from the .nc files. Should have 'input' and 'output' keys.
+#         :param data_fraction: Fraction of data files to use (default is 1.0, which means use all files).
+#         """
+#         self.input_directory = input_directory
+#         self.output_directory = output_directory
+#         self.variable_names = variable_names
+#         self.data_fraction = data_fraction
+#         self.skip_first_snap = skip_first_snap
+#         self.input_files = self._load_files(input_directory)
+#         self.output_files = self._load_files(output_directory)
+#         self.input_mean = None
+#         self.input_std = None
+#         self.output_mean = None
+#         self.output_std = None
+
+#     @staticmethod
+#     def load_nc_files(directory: str, variable_name: str, file_index: int, skip_first_snap: int = 0):
+#         """
+#         Load data from a .nc file.
+
+#         :param directory: Directory where the .nc files are stored.
+#         :param variable_name: Name of the variable to load from the .nc files.
+#         :param file_index: Index of the file to load.
+#         :return: Data loaded from the .nc file, or None if an error occurred.
+#         """
+#         files = os.listdir(directory)
+#         files = [f for f in files if f.endswith('.nc')]
+
+#         if not files:
+#             logging.error("No .nc files found in the directory.")
+#             return None
+
+#         files.sort(key=lambda x: int(x.split('.')[0]))
+
+#         if file_index < 0 or file_index >= len(files):
+#             logging.error("file_index is out of range.")
+#             return None
+
+#         file_path = os.path.join(directory, files[file_index])
+
+#         try:
+#             with Dataset(file_path, 'r') as nc_file:
+#                 if variable_name not in nc_file.variables:
+#                     logging.error(f"Variable {variable_name} not found in the file.")
+#                     return None
+
+#                 data = nc_file.variables[variable_name][skip_first_snap:] # Skip first 60 timesteps
+#         except Exception as e:
+#             logging.error(f"Error reading the .nc file: {str(e)}")
+#             return None
+
+#         return data
+
+#     def _load_files(self, directory):
+#         """
+#         Load the list of .nc files from the directory.
+
+#         :return: Sorted list of .nc files in the directory.
+#         """
+#         files = os.listdir(directory)
+#         files = [f for f in files if f.endswith('.nc')]
+#         files.sort(key=lambda x: int(x.split('.')[0]))
+        
+#         # Only use a fraction of files if specified
+#         num_files = int(len(files) * self.data_fraction)
+#         files = files[:num_files]
+        
+#         return files
+
+#     def __len__(self):
+#         return len(self.input_files)
+
+#     def __getitem__(self, idx: int):
+#         inputs = [self.load_nc_files(self.input_directory, var, idx, self.skip_first_snap) for var in self.variable_names['input']]
+#         outputs = [self.load_nc_files(self.output_directory, var, idx, self.skip_first_snap) for var in self.variable_names['output']]
+
+#         if any(v is None for v in inputs+outputs):
+#             return None
+
+#         inputs = [torch.from_numpy(data) for data in inputs]
+#         outputs = [torch.from_numpy(data) for data in outputs]
+
+#         inputs = torch.cat(inputs, dim=1)
+#         outputs = torch.cat(outputs, dim=1)
+
+#         if self.input_mean is not None and self.input_std is not None:
+#             inputs = self.normalize(inputs, self.input_mean, self.input_std)
+
+#         if self.output_mean is not None and self.output_std is not None:
+#             outputs = self.normalize(outputs, self.output_mean, self.output_std)
+
+#         return inputs, outputs
+
+#     def get_means_and_stds(self, indices):
+#         all_input_data = [self.__getitem__(idx)[0] for idx in indices]
+#         all_output_data = [self.__getitem__(idx)[1] for idx in indices]
+        
+#         input_mean = torch.mean(torch.cat(all_input_data, axis=0), axis=(0, 2, 3))
+#         input_std = torch.std(torch.cat(all_input_data, axis=0), axis=(0, 2, 3))
+
+#         output_mean = torch.mean(torch.cat(all_output_data, axis=0), axis=(0, 2, 3))
+#         output_std = torch.std(torch.cat(all_output_data, axis=0), axis=(0, 2, 3))
+
+#         return input_mean, input_std, output_mean, output_std
+
+#     def normalize(self, data, mean, std):
+#         return (data - mean[None, :, None, None]) / std[None, :, None, None]
+
 class NCDataset(TorchDataset):
     """
     Dataset for loading NetCDF files.
@@ -491,10 +608,6 @@ class NCDataset(TorchDataset):
         self.skip_first_snap = skip_first_snap
         self.input_files = self._load_files(input_directory)
         self.output_files = self._load_files(output_directory)
-        self.input_mean = None
-        self.input_std = None
-        self.output_mean = None
-        self.output_std = None
 
     @staticmethod
     def load_nc_files(directory: str, variable_name: str, file_index: int, skip_first_snap: int = 0):
@@ -566,26 +679,27 @@ class NCDataset(TorchDataset):
         inputs = torch.cat(inputs, dim=1)
         outputs = torch.cat(outputs, dim=1)
 
-        if self.input_mean is not None and self.input_std is not None:
-            inputs = self.normalize(inputs, self.input_mean, self.input_std)
+        # Compute means and stds of each file individually
+        self.input_mean = torch.mean(inputs, axis=(0, 2, 3))
+        self.input_std = torch.std(inputs, axis=(0, 2, 3))
 
-        if self.output_mean is not None and self.output_std is not None:
-            outputs = self.normalize(outputs, self.output_mean, self.output_std)
+        self.output_mean = torch.mean(outputs, axis=(0, 2, 3))
+        self.output_std = torch.std(outputs, axis=(0, 2, 3))
 
-        return inputs, outputs
-
-    def get_means_and_stds(self, indices):
-        all_input_data = [self.__getitem__(idx)[0] for idx in indices]
-        all_output_data = [self.__getitem__(idx)[1] for idx in indices]
+        # Normalize the data
+        inputs = self.normalize(inputs, self.input_mean, self.input_std)
+        outputs = self.normalize(outputs, self.output_mean, self.output_std)
         
-        input_mean = torch.mean(torch.cat(all_input_data, axis=0), axis=(0, 2, 3))
-        input_std = torch.std(torch.cat(all_input_data, axis=0), axis=(0, 2, 3))
+        # Create a dictionary of the means and stds
+        stats = {
+            'input_mean': self.input_mean,
+            'input_std': self.input_std,
+            'output_mean': self.output_mean,
+            'output_std': self.output_std
+        }
 
-        output_mean = torch.mean(torch.cat(all_output_data, axis=0), axis=(0, 2, 3))
-        output_std = torch.std(torch.cat(all_output_data, axis=0), axis=(0, 2, 3))
-
-        return input_mean, input_std, output_mean, output_std
+        return inputs, outputs, stats
 
     def normalize(self, data, mean, std):
         return (data - mean[None, :, None, None]) / std[None, :, None, None]
-
+    
