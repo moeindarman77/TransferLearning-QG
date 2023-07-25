@@ -20,6 +20,7 @@ import json
 import gc
 import netCDF4 as nc
 
+
 ################################################################################################################################
                         # --------------------------- CNN Architecture ---------------------------#
 ################################################################################################################################
@@ -137,9 +138,9 @@ class rRMSELoss(nn.Module):
     def __init__(self):
         super().__init__()
         self.mse = nn.MSELoss()
-
+    # Shape of the output (Num_samples, 64, 64) for the loss
     def forward(self, yhat, y):
-        return torch.sqrt(self.mse(yhat, y)) / torch.sqrt(torch.mean(y**2))
+        return torch.sqrt(    torch.mean( ((y-yhat)**2 ).sum(axis=(1,2)) ) / torch.mean( (y**2).sum(axis=(1,2)) ) )/256
 
 ################################################################################################################################
                         # --------------------------- Setting up Hyper-Parmeters for CNN --------------------------- #
@@ -149,14 +150,14 @@ print("--------------------------- Setting up Hyper-Parmeters for CNN ----------
 config_default = {
           "device": torch.device('cuda' if torch.cuda.is_available() else 'cpu'), 
           "batch_size_train": 8, 
-          "learning_rate": 1e-4,
+          "learning_rate": 1e-3,
           "num_classes": 1,
-          "num_epochs": 40,
-          "data_fraction": 0.7, # Fraction of data to be trained 0<x<1 [Whole number of data is 87*2500 =  217500] [For 0.23 * 0.8 * 217000 = 39,928 I get almost 40,000 samples Ashesh trained with.]
+          "num_epochs": 50,
+          "data_fraction": 1, # Fraction of data to be trained 0<x<1 [Whole number of data is 87*2500 =  217500] [For 0.23 * 0.8 * 217000 = 39,928 I get almost 40,000 samples Ashesh trained with.]
           "train_fraction": 0.9, # Ratio of train and test data
           "val_fraction":0.05, # Ratio of validation data
           "test_fraction":0.05, # Ratio of test data
-          "skip_first_snap": 80, # Number of snapshots to skip from the beginning of each file
+          "skip_first_snap": 69, # Number of snapshots to skip from the beginning of each file
          }
 
 ################################################################################################################################
@@ -170,8 +171,7 @@ def train_model(config=config_default):
 
     # 0. Model Initialization
     model = ConvNeuralNet(config["num_classes"]).to(config["device"])
-    model.double()  # Convert to float64
-
+    # model.double()  # Convert to float64
 
     print('**** Number of Trainable Parameters in BNN ****')
     count_parameters(model)
@@ -226,7 +226,7 @@ def train_model(config=config_default):
     test_dataset = torch.utils.data.Subset(nc_dataset, range(val_end, num_samples))
 
     # 2.6 Calculate the mean and standard deviation of different sets
-    input_mean_train, input_std_train, output_mean_train, output_std_train = train_dataset.dataset.get_means_and_stds(indices=train_dataset.indices)
+    # input_mean_train, input_std_train, output_mean_train, output_std_train = train_dataset.dataset.get_means_and_stds(indices=train_dataset.indices) # Comment it
     # input_mean, input_std, output_mean, output_std = train_dataset.dataset.get_means_and_stds(train_dataset.indices)
     # input_mean_test, input_std_test, output_mean_test, output_std_test = test_dataset.dataset.get_means_and_stds(test_dataset.indices)
     # input_mean_val, input_std_val, output_mean_val, output_std_val = validation_dataset.dataset.get_means_and_stds(validation_dataset.indices)
@@ -238,21 +238,21 @@ def train_model(config=config_default):
 ################################################################################################################################
 
     # Get the mean std of the training set
-    train_dataset.dataset.input_mean = input_mean_train
-    train_dataset.dataset.input_std = input_std_train
-    train_dataset.dataset.output_mean = output_mean_train
-    train_dataset.dataset.output_std = output_std_train
+    # train_dataset.dataset.input_mean = input_mean_train
+    # train_dataset.dataset.input_std = input_std_train
+    # train_dataset.dataset.output_mean = output_mean_train
+    # train_dataset.dataset.output_std = output_std_train
     
-    # # Get the mean std of the test set
-    test_dataset.dataset.input_mean = input_mean_train
-    test_dataset.dataset.input_std = input_std_train
-    test_dataset.dataset.output_mean = output_mean_train
-    test_dataset.dataset.output_std = output_std_train
+    # # # Get the mean std of the test set
+    # test_dataset.dataset.input_mean = input_mean_train
+    # test_dataset.dataset.input_std = input_std_train
+    # test_dataset.dataset.output_mean = output_mean_train
+    # test_dataset.dataset.output_std = output_std_train
 
-    validation_dataset.dataset.input_mean = input_mean_train
-    validation_dataset.dataset.input_std = input_std_train
-    validation_dataset.dataset.output_mean = output_mean_train
-    validation_dataset.dataset.output_std = output_std_train
+    # validation_dataset.dataset.input_mean = input_mean_train
+    # validation_dataset.dataset.input_std = input_std_train
+    # validation_dataset.dataset.output_mean = output_mean_train
+    # validation_dataset.dataset.output_std = output_std_train
 
     # 2.8 Use the dataset with a DataLoader
     data_loader_train = torch.utils.data.DataLoader(train_dataset, batch_size=1, shuffle=True)
@@ -280,14 +280,16 @@ def train_model(config=config_default):
         train_loss_total = 0
         train_rmse_q1_total = 0
         train_rmse_q2_total = 0
+        counter_cc_q1_total = 0
+        counter_cc_q2_total = 0
         for i, data_train in enumerate(data_loader_train):
 
             # Get batch of data
             inputs_train, labels_train = data_train[0].reshape(-1, 4, 64, 64), data_train[1].reshape(-1, 2, 64, 64)
 
             # Move tensors to the configured device with right data type
-            inputs_train = inputs_train.to(device=config['device'], dtype = torch.float64)
-            labels_train = labels_train.to(device=config['device'], dtype = torch.float64)
+            inputs_train = inputs_train.to(device=config['device'], dtype = torch.float32)
+            labels_train = labels_train.to(device=config['device'], dtype = torch.float32)
 
             # Forward pass train 
             model_output, _ = model(inputs_train)
@@ -298,9 +300,9 @@ def train_model(config=config_default):
             rmse_q2_train_ = criterion_rmse(model_output[:,1], labels_train[:,1]) # The first argument should be the "predicted value" and the second argument should be the "true value"
 
             # Sum the loss over the batch
-            train_loss_total =+ loss.item()
-            train_rmse_q1_total =+ rmse_q1_train_.item()
-            train_rmse_q2_total =+ rmse_q2_train_.item()
+            train_loss_total += loss.item()
+            train_rmse_q1_total += rmse_q1_train_.item()
+            train_rmse_q2_total += rmse_q2_train_.item()
             
             # Backward and optimize
             optimizer.zero_grad()
@@ -330,8 +332,8 @@ def train_model(config=config_default):
             inputs_test, labels_test = data_test[0].reshape(-1, 4, 64, 64), data_test[1].reshape(-1, 2, 64, 64)
             
             # Move tensors to the configured device
-            inputs_test = inputs_test.to(device=config['device'], dtype = torch.float64)
-            labels_test = labels_test.to(device=config['device'], dtype = torch.float64)
+            inputs_test = inputs_test.to(device=config['device'], dtype = torch.float32)
+            labels_test = labels_test.to(device=config['device'], dtype = torch.float32)
 
             # Forward pass test
             model_output_test,_ = model(inputs_test)
@@ -345,14 +347,15 @@ def train_model(config=config_default):
             # cc_q2_test = corr2(model_output_test[:,1]* output_std_train[None, 1, None, None].cuda() + output_mean_train[None, 1, None, None].cuda(), labels_test[:,1]* output_std_train[None, 1, None, None].cuda() + output_mean_train[None, 1, None, None].cuda())
             cc_q1_test = corr2(model_output_test[:,0], labels_test[:,0])
             cc_q2_test = corr2(model_output_test[:,1], labels_test[:,1])
-
+            
             # Sum the loss over the batches
-            test_loss_total =+ loss_test.item()
-            test_rmse_q1_total =+ rmse_q1_test.item()
-            test_rmse_q2_total =+ rmse_q2_test.item()
-            cc_q1_total =+ cc_q1_test
-            cc_q2_total =+ cc_q2_test
-
+            test_loss_total += loss_test.item()
+            test_rmse_q1_total += rmse_q1_test.item()
+            test_rmse_q2_total += rmse_q2_test.item()
+            
+            cc_q1_total += cc_q1_test
+            cc_q2_total += cc_q2_test
+            
             # Print the progress in files
             print(f"Test Batch[{i+1}/{len(data_loader_test)}]", end='\r')
             
@@ -451,11 +454,11 @@ def train_model(config=config_default):
     cc_q2_total = 0
 
     for i, data_val in enumerate(data_loader_validation):
-        inputs_val, labels_val = data_val[0].reshape(-1, 4, 64, 64), data_val[1].reshape(-1, 2, 64, 64)
+        inputs_val, labels_val, stats = data_val[0].reshape(-1, 4, 64, 64), data_val[1].reshape(-1, 2, 64, 64), data_val[2]
 
         # Move tensors to the configured device
-        inputs_val = inputs_val.to(device=config['device'], dtype = torch.float64)
-        labels_val = labels_val.to(device=config['device'], dtype = torch.float64)
+        inputs_val = inputs_val.to(device=config['device'], dtype = torch.float32)
+        labels_val = labels_val.to(device=config['device'], dtype = torch.float32)
 
         # Forward pass
         model_output_val,mid_output_val = model(inputs_val)
@@ -469,16 +472,16 @@ def train_model(config=config_default):
         cc_q2 = corr2(model_output_val[:,1]*scale, labels_val[:,1]*scale)
 
         # Sum the loss over the batches
-        val_loss_total =+ loss_val.item()
-        val_rmse_q1_total =+ rmse_q1_val.item()
-        val_rmse_q2_total =+ rmse_q2_val.item()
-        cc_q1_total =+ cc_q1
-        cc_q2_total =+ cc_q2
+        val_loss_total += loss_val.item()
+        val_rmse_q1_total += rmse_q1_val.item()
+        val_rmse_q2_total += rmse_q2_val.item()
+        cc_q1_total += cc_q1
+        cc_q2_total += cc_q2
 
-        # Denormalizing Validation data [input and output]
-        inputs_val_denormalized = inputs_val * input_std_train[None, :, None, None].cuda() + input_mean_train[None, :, None, None].cuda()
-        labels_val_denormalized = labels_val * output_std_train[None, :, None, None].cuda() + output_mean_train[None, :, None, None].cuda()
-        model_output_val_denormalized = model_output_val * output_std_train[None, :, None, None].cuda() + output_mean_train[None, :, None, None].cuda()
+        # # Denormalizing Validation data [input and output]
+        inputs_val_denormalized = inputs_val * stats['input_std'].reshape(-1)[None, :, None, None].cuda() + stats['input_mean'].reshape(-1)[None, :, None, None].cuda()
+        labels_val_denormalized = labels_val * stats['output_std'].reshape(-1)[None, :, None, None].cuda() + stats['output_mean'].reshape(-1)[None, :, None, None].cuda()
+        model_output_val_denormalized = model_output_val * stats['output_std'].reshape(-1)[None, :, None, None].cuda() + stats['output_mean'].reshape(-1)[None, :, None, None].cuda()
         
         # Storing the data
         inputs = torch.cat((inputs, inputs_val_denormalized.detach().cpu()), 0)
@@ -520,14 +523,14 @@ def train_model(config=config_default):
         json.dump(offline_metrics, f)
         print("Metrics saved in file: ", file_name)
 
-    # Saving the trianing statistics
-    training_mean_std = {"input_mean_train":input_mean_train.tolist(),
-                        "input_std_train":input_std_train.tolist(),
-                        "output_mean_train":output_mean_train.tolist(),
-                        "output_std_train":output_std_train.tolist(),}
-    file_name = "training_mean_std.txt"
+    # Saving the trianing statistics (I am taking the last )
+    validation_mean_std = {"input_mean_train":stats['input_mean'].tolist(),
+                        "input_std_train":stats["input_std"].tolist(),
+                        "output_mean_train":stats["output_mean"].tolist(),
+                        "output_std_train":stats["output_std"].tolist(),}
+    file_name = "validation_mean_std.txt"
     with open(file_name, "w") as f:
-        json.dump(training_mean_std, f)
+        json.dump(validation_mean_std, f)
         print("Training mean and std saved in file: ", file_name)
 
     # Saving activations
