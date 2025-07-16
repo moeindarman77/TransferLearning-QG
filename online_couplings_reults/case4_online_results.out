@@ -1,0 +1,293 @@
+<__main__.CNNparametrization object at 0x7fad6fd4b730>
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+INFO:  Logger initialized
+INFO: Step: 10000, Time: 3.60e+07, KE: 1.33e-06, CFL: 0.008
+INFO: Step: 20000, Time: 7.20e+07, KE: 6.00e-06, CFL: 0.010
+INFO: Step: 30000, Time: 1.08e+08, KE: 5.10e-05, CFL: 0.018
+INFO: Step: 40000, Time: 1.44e+08, KE: 9.01e-05, CFL: 0.030
+INFO: Step: 50000, Time: 1.80e+08, KE: 1.19e-04, CFL: 0.032
+INFO: Step: 60000, Time: 2.16e+08, KE: 1.18e-04, CFL: 0.030
+INFO: Step: 70000, Time: 2.52e+08, KE: 1.01e-04, CFL: 0.027
+INFO: Step: 80000, Time: 2.88e+08, KE: 1.22e-04, CFL: 0.031
+INFO: Step: 90000, Time: 3.24e+08, KE: 1.18e-04, CFL: 0.030
+INFO: Step: 100000, Time: 3.60e+08, KE: 1.23e-04, CFL: 0.033
+INFO: Step: 110000, Time: 3.96e+08, KE: 1.20e-04, CFL: 0.038
+INFO: Step: 120000, Time: 4.32e+08, KE: 1.34e-04, CFL: 0.034
+INFO: Step: 130000, Time: 4.68e+08, KE: 1.23e-04, CFL: 0.036
+INFO: Step: 140000, Time: 5.04e+08, KE: 1.37e-04, CFL: 0.034
+INFO: Step: 150000, Time: 5.40e+08, KE: 1.36e-04, CFL: 0.041
+INFO: Step: 160000, Time: 5.76e+08, KE: 1.52e-04, CFL: 0.034
+INFO: Step: 170000, Time: 6.12e+08, KE: 1.40e-04, CFL: 0.032
+cnn done
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+INFO:  Logger initialized
+INFO: Step: 10000, Time: 3.60e+07, KE: 4.55e-06, CFL: 0.011
+INFO: Step: 20000, Time: 7.20e+07, KE: 1.09e-05, CFL: 0.014
+INFO: Step: 30000, Time: 1.08e+08, KE: 3.74e-05, CFL: 0.024
+INFO: Step: 40000, Time: 1.44e+08, KE: 7.77e-05, CFL: 0.033
+INFO: Step: 50000, Time: 1.80e+08, KE: 1.02e-04, CFL: 0.031
+INFO: Step: 60000, Time: 2.16e+08, KE: 1.28e-04, CFL: 0.039
+INFO: Step: 70000, Time: 2.52e+08, KE: 1.28e-04, CFL: 0.036
+INFO: Step: 80000, Time: 2.88e+08, KE: 1.61e-04, CFL: 0.038
+INFO: Step: 90000, Time: 3.24e+08, KE: 1.74e-04, CFL: 0.039
+INFO: Step: 100000, Time: 3.60e+08, KE: 1.70e-04, CFL: 0.035
+INFO: Step: 110000, Time: 3.96e+08, KE: 1.74e-04, CFL: 0.034
+INFO: Step: 120000, Time: 4.32e+08, KE: 1.58e-04, CFL: 0.033
+INFO: Step: 130000, Time: 4.68e+08, KE: 1.68e-04, CFL: 0.033
+INFO: Step: 140000, Time: 5.04e+08, KE: 1.65e-04, CFL: 0.037
+INFO: Step: 150000, Time: 5.40e+08, KE: 1.67e-04, CFL: 0.034
+INFO: Step: 160000, Time: 5.76e+08, KE: 1.54e-04, CFL: 0.037
+INFO: Step: 170000, Time: 6.12e+08, KE: 1.82e-04, CFL: 0.036
+bnn done
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+INFO:  Logger initialized
+INFO: Step: 10000, Time: 3.60e+07, KE: 4.30e-06, CFL: 0.012
+INFO: Step: 20000, Time: 7.20e+07, KE: 9.49e-06, CFL: 0.014
+INFO: Step: 30000, Time: 1.08e+08, KE: 2.68e-05, CFL: 0.018
+INFO: Step: 40000, Time: 1.44e+08, KE: 5.14e-05, CFL: 0.029
+INFO: Step: 50000, Time: 1.80e+08, KE: 8.35e-05, CFL: 0.025
+INFO: Step: 60000, Time: 2.16e+08, KE: 1.06e-04, CFL: 0.031
+INFO: Step: 70000, Time: 2.52e+08, KE: 1.04e-04, CFL: 0.036
+INFO: Step: 80000, Time: 2.88e+08, KE: 1.12e-04, CFL: 0.030
+INFO: Step: 90000, Time: 3.24e+08, KE: 1.29e-04, CFL: 0.032
+INFO: Step: 100000, Time: 3.60e+08, KE: 1.19e-04, CFL: 0.030
+INFO: Step: 110000, Time: 3.96e+08, KE: 1.21e-04, CFL: 0.030
+INFO: Step: 120000, Time: 4.32e+08, KE: 1.21e-04, CFL: 0.036
+INFO: Step: 130000, Time: 4.68e+08, KE: 1.33e-04, CFL: 0.037
+INFO: Step: 140000, Time: 5.04e+08, KE: 1.28e-04, CFL: 0.030
+INFO: Step: 150000, Time: 5.40e+08, KE: 1.37e-04, CFL: 0.034
+INFO: Step: 160000, Time: 5.76e+08, KE: 1.22e-04, CFL: 0.030
+INFO: Step: 170000, Time: 6.12e+08, KE: 1.33e-04, CFL: 0.031
+tl done
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+INFO:  Logger initialized
+INFO: Step: 10000, Time: 3.60e+07, KE: 3.79e-06, CFL: 0.012
+INFO: Step: 20000, Time: 7.20e+07, KE: 1.12e-05, CFL: 0.014
+INFO: Step: 30000, Time: 1.08e+08, KE: 3.09e-05, CFL: 0.019
+INFO: Step: 40000, Time: 1.44e+08, KE: 5.88e-05, CFL: 0.022
+INFO: Step: 50000, Time: 1.80e+08, KE: 8.83e-05, CFL: 0.028
+INFO: Step: 60000, Time: 2.16e+08, KE: 1.28e-04, CFL: 0.029
+INFO: Step: 70000, Time: 2.52e+08, KE: 1.04e-04, CFL: 0.027
+INFO: Step: 80000, Time: 2.88e+08, KE: 1.17e-04, CFL: 0.039
+INFO: Step: 90000, Time: 3.24e+08, KE: 1.17e-04, CFL: 0.032
+INFO: Step: 100000, Time: 3.60e+08, KE: 1.14e-04, CFL: 0.029
+INFO: Step: 110000, Time: 3.96e+08, KE: 1.43e-04, CFL: 0.039
+INFO: Step: 120000, Time: 4.32e+08, KE: 1.42e-04, CFL: 0.033
+INFO: Step: 130000, Time: 4.68e+08, KE: 1.63e-04, CFL: 0.040
+INFO: Step: 140000, Time: 5.04e+08, KE: 1.41e-04, CFL: 0.035
+INFO: Step: 150000, Time: 5.40e+08, KE: 1.30e-04, CFL: 0.033
+INFO: Step: 160000, Time: 5.76e+08, KE: 1.16e-04, CFL: 0.030
+INFO: Step: 170000, Time: 6.12e+08, KE: 1.39e-04, CFL: 0.034
+shallow done

@@ -1,0 +1,100 @@
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+RuntimeError: Undefined plan with nthreads. This is a bug
+Exception ignored in: 'pyfftw.pyfftw._fftw_plan_with_nthreads_null'
+Traceback (most recent call last):
+  File "/media/volume/sdc/qg/pyqg/pyqg/pyqg/model.py", line 217, in __init__
+    PseudoSpectralKernel.__init__(self, nz, ny, nx, ntd,
+RuntimeError: Undefined plan with nthreads. This is a bug
+INFO:  Logger initialized
+(64, 64)
+INFO: Step: 10000, Time: 3.60e+07, KE: 1.58e-04, CFL: 0.032
+INFO: Step: 20000, Time: 7.20e+07, KE: 1.51e-04, CFL: 0.035
+INFO: Step: 30000, Time: 1.08e+08, KE: 1.39e-04, CFL: 0.033
+INFO: Step: 40000, Time: 1.44e+08, KE: 1.60e-04, CFL: 0.030
+INFO: Step: 50000, Time: 1.80e+08, KE: 1.43e-04, CFL: 0.034
+INFO: Step: 60000, Time: 2.16e+08, KE: 1.46e-04, CFL: 0.036
+INFO: Step: 70000, Time: 2.52e+08, KE: 1.32e-04, CFL: 0.036
+INFO: Step: 80000, Time: 2.88e+08, KE: 1.38e-04, CFL: 0.033
+INFO: Step: 90000, Time: 3.24e+08, KE: 1.60e-04, CFL: 0.042
+INFO: Step: 100000, Time: 3.60e+08, KE: 1.29e-04, CFL: 0.034
+INFO: Step: 110000, Time: 3.96e+08, KE: 1.35e-04, CFL: 0.038
+INFO: Step: 120000, Time: 4.32e+08, KE: 1.49e-04, CFL: 0.036
+INFO: Step: 130000, Time: 4.68e+08, KE: 1.56e-04, CFL: 0.036
+INFO: Step: 140000, Time: 5.04e+08, KE: 1.18e-04, CFL: 0.040
+INFO: Step: 150000, Time: 5.40e+08, KE: 1.25e-04, CFL: 0.031
+INFO: Step: 160000, Time: 5.76e+08, KE: 1.18e-04, CFL: 0.036
+INFO: Step: 170000, Time: 6.12e+08, KE: 1.29e-04, CFL: 0.034
+INFO: Step: 180000, Time: 6.48e+08, KE: 1.33e-04, CFL: 0.035
+INFO: Step: 190000, Time: 6.84e+08, KE: 1.28e-04, CFL: 0.032
+INFO: Step: 200000, Time: 7.20e+08, KE: 1.49e-04, CFL: 0.033
+INFO: Step: 210000, Time: 7.56e+08, KE: 1.61e-04, CFL: 0.037
+INFO: Step: 220000, Time: 7.92e+08, KE: 1.48e-04, CFL: 0.034
+INFO: Step: 230000, Time: 8.28e+08, KE: 1.37e-04, CFL: 0.039
+INFO: Step: 240000, Time: 8.64e+08, KE: 1.35e-04, CFL: 0.034
+INFO: Step: 250000, Time: 9.00e+08, KE: 1.54e-04, CFL: 0.037
+INFO: Step: 260000, Time: 9.36e+08, KE: 1.52e-04, CFL: 0.038
+INFO: Step: 270000, Time: 9.72e+08, KE: 1.41e-04, CFL: 0.032
+INFO: Step: 280000, Time: 1.01e+09, KE: 1.51e-04, CFL: 0.034
+INFO: Step: 290000, Time: 1.04e+09, KE: 1.59e-04, CFL: 0.034
+INFO: Step: 300000, Time: 1.08e+09, KE: 1.66e-04, CFL: 0.033
+INFO: Step: 310000, Time: 1.12e+09, KE: 1.21e-04, CFL: 0.039
+INFO: Step: 320000, Time: 1.15e+09, KE: 1.60e-04, CFL: 0.036
+INFO: Step: 330000, Time: 1.19e+09, KE: 1.59e-04, CFL: 0.041
+INFO: Step: 340000, Time: 1.22e+09, KE: 1.33e-04, CFL: 0.041
+INFO: Step: 350000, Time: 1.26e+09, KE: 1.24e-04, CFL: 0.030
+INFO: Step: 360000, Time: 1.30e+09, KE: 1.51e-04, CFL: 0.043
+INFO: Step: 370000, Time: 1.33e+09, KE: 1.39e-04, CFL: 0.033
+INFO: Step: 380000, Time: 1.37e+09, KE: 1.48e-04, CFL: 0.033
+INFO: Step: 390000, Time: 1.40e+09, KE: 1.54e-04, CFL: 0.037
+INFO: Step: 400000, Time: 1.44e+09, KE: 1.48e-04, CFL: 0.035
+INFO: Step: 410000, Time: 1.48e+09, KE: 1.65e-04, CFL: 0.034
+INFO: Step: 420000, Time: 1.51e+09, KE: 1.48e-04, CFL: 0.034
+INFO: Step: 430000, Time: 1.55e+09, KE: 1.37e-04, CFL: 0.038
+tl done

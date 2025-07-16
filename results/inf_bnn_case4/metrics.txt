@@ -1,0 +1,1 @@
+{"best_test_loss": Infinity, "validation_loss": 0.3274611365376857, "validation_rmse_q1": 0.001475795919663812, "validation_rmse_q2": 0.0027914251519465133, "validation_cc_q1": 0.9428759415944418, "validation_cc_q2": 0.8352874622010348, "training_loss": [], "test_loss": []}
