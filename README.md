@@ -437,8 +437,8 @@ We thank:
 - **Computational Resources**: NSF ACCESS MTH240019, NCAR CISL UCSC0008/UCSC0009
 
 **Contact:**
-- Moein Darman: [moein.darman@rice.edu](mailto:moein.darman@rice.edu)
-- Pedram Hassanzadeh: [pedram@rice.edu](mailto:pedram@rice.edu)
+- Moein Darman: [moein.darman@rice.edu](mailto:mdarman@ucsc.edu)
+- Pedram Hassanzadeh: [pedram@rice.edu](mailto:pedramh@uchicago.edu)
 - GitHub: [https://github.com/moeindarman77/TransferLearning-QG](https://github.com/moeindarman77/TransferLearning-QG)
 
 ---
